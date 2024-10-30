@@ -75,3 +75,60 @@ no_gdp_country_2 <- data %>%
   )
 sum(no_gdp_country_2$na_years) 
 ## we are only left with 63 rows out of 5307 that don't have gdp
+
+## For the remaining null values, in order not to affect our analysis, we won't use mean/mode/median filling, instead we will use interpolation, further details will follow
+
+## we started by filtering the countries with null GDP values
+no_gdp_country_2 <- no_gdp_country_2 %>%
+  filter(ratio_na>0)
+no_gdp_country_2
+
+## installed the necessary package
+install.packages("zoo")
+library(zoo)
+
+## create a data frame test to handle filling missing values
+colSums(is.na(data))
+test <- data
+test <- test %>%
+  ## first we group the data with country names to keep high accuracy
+  group_by(`Country Name`) %>%
+  ## then we go through all the columns, we check first if it's all null values, if that's true we keep it as we will check it later
+  ## if there is null values, we fill them through linear interpolation or extrapolation if the missing values are on the two sides of the data
+  mutate(`GDP (USD)`=if (all(is.na(`GDP (USD)`))) `GDP (USD)` else na.approx(`GDP (USD)`,Year,rule=2)) %>% ## rule=2 because our values are on the extreme side: example: (Na,1,2,3,NA)
+  mutate(`GDP per capita (USD)`=if (all(is.na(`GDP per capita (USD)`))) `GDP per capita (USD)` else na.approx(`GDP per capita (USD)`,Year,rule=2)) %>%
+  mutate(`Death rate, crude (per 1,000 people)`=if (all(is.na(`Death rate, crude (per 1,000 people)`))) `Death rate, crude (per 1,000 people)` else na.approx(`Death rate, crude (per 1,000 people)`,Year,rule=2)) %>%
+  mutate(`Infant mortality rate (per 1,000 live births)`=if (all(is.na(`Infant mortality rate (per 1,000 live births)`))) `Infant mortality rate (per 1,000 live births)` else na.approx(`Infant mortality rate (per 1,000 live births)`,Year,rule=2)) %>%
+  mutate(`Life expectancy at birth (years)`=if (all(is.na(`Life expectancy at birth (years)`))) `Life expectancy at birth (years)` else na.approx(`Life expectancy at birth (years)`,Year,rule=2)) %>%
+  mutate(`Unemployment (% of total labor force) (modeled ILO estimate)`=if (all(is.na(`Unemployment (% of total labor force) (modeled ILO estimate)`))) `Unemployment (% of total labor force) (modeled ILO estimate)` else na.approx(`Unemployment (% of total labor force) (modeled ILO estimate)`,Year,rule=2))%>%
+  mutate(`Birth rate, crude (per 1,000 people)`=if (all(is.na(`Birth rate, crude (per 1,000 people)`))) `Birth rate, crude (per 1,000 people)` else na.approx(`Birth rate, crude (per 1,000 people)`,Year,rule=2)) %>% 
+  mutate(`Population density (people per sq. km of land area)`=if (all(is.na(`Population density (people per sq. km of land area)`))) `Population density (people per sq. km of land area)` else na.approx(`Population density (people per sq. km of land area)`,Year,rule=2))
+
+
+## once we finished, I created few dataframes that will check if the data still having null values, we take the relevant countries
+## This should be relatively small countries so if they are removed our analysis wont' be too much affected
+
+test_na_unemp <-test %>%
+  filter(is.na(`Unemployment (% of total labor force) (modeled ILO estimate)`))%>%
+  select(`Country Name`,Year,`Unemployment (% of total labor force) (modeled ILO estimate)`)
+print(test_na_unemp)
+
+test_na_inf <- test %>%
+  filter(is.na(`Infant mortality rate (per 1,000 live births)`))%>%
+  select(`Country Name`,Year,`Infant mortality rate (per 1,000 live births)`)
+print(test_na_inf,n=203)
+
+test_na_pop <- test %>%
+  filter(is.na(`Population density (people per sq. km of land area)`))%>%
+  select(`Country Name`,Year,`Population density (people per sq. km of land area)`)
+print(test_na_pop,n=200)
+
+## we add all the countries to one vector
+countries_to_drop <-c(unique(test_na_unemp$`Country Name`) ,unique(test_na_inf$`Country Name`),unique(test_na_pop$`Country Name`))
+
+## then we filter them out and end up with a clean df that has 4785 rows and 13 columns ( initial df had 12449 and 15 columns)
+data_clean <- test %>%
+  filter(!`Country Name` %in% countries_to_drop)
+
+colSums(is.na(data_clean))
+dim(data_clean)
