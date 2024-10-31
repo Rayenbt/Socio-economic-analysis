@@ -132,3 +132,87 @@ data_clean <- test %>%
 
 colSums(is.na(data_clean))
 dim(data_clean)
+
+
+#### After considering my data, I decide to broaden my dataset and merge it with another data for my analysis
+data_2 <- read_csv("Countries.csv")
+countries <- unique(data_clean$`Country Code`)
+
+data_2_filtered <- data_2 %>%
+  filter(`Country Code` %in% countries)
+
+dim(data_2_filtered)  
+head(data_2_filtered) 
+str(data_2_filtered)
+
+selected_cols <- c("Country Name","Country Code","Year","Inflation Rate","Agriculture (% GDP)","Industry (% GDP)","Service (% GDP)","Health Expenditure (% GDP)","Education Expenditure (% GDP)","Population"
+)
+
+data_2_filtered <- data_2_filtered %>%
+  filter(Year <= 2018) %>%
+  select(all_of(selected_cols))
+
+colSums(is.na(data_2_filtered))
+
+## same approach, I have taken just few columns of this data and made sure it's within the max years range (2018)
+## Now I will clean some missing values, I only have three columns with missing values so I will discuss what I'm going to do for each one
+
+inf_emp <- data_2_filtered %>%
+  filter(is.na(`Inflation Rate`))
+print(inf_emp,n=60)  
+
+health_emp <- data_2_filtered %>%
+  filter(is.na(`Health Expenditure (% GDP)`))
+print(health_emp,n=60)
+
+
+education_emp <- data_2_filtered %>%
+  filter(is.na(`Education Expenditure (% GDP)`))
+print(education_emp,n=60)
+
+### Searched the internet for the values and I got them from this website: https://www.imf.org/external/datamapper/PCPIPCH@WEO/OEMDC/ADVEC/WEOWORLD/WSM/ARG/CUB/BIH
+argentina_inf <- c(-0.9,-1.1,25.9,13.4,4.4,9.6,10.9,8.8,8.6,6.3,10.5,9.8,10,10.6,NA,NA,NA,25.7,34.3)
+turkmenistan_inf <- c(8,11.6,8.8,5.6,5.9,10.7,8.2,6.3,14.5,-2.7,4.4,5.3,5.3,6.8,6,7.4,3.6,8,13.3)
+cuba_inf <- c(NA,NA,NA,NA,NA,3.7,5.7,2.8,0.8,3.1,2.1,4.8,5.5,6,5.3,4.2,4.5,5.5,6.9)
+### Values extracted from Palestinian central bureau of statistics: https://www.pcbs.gov.ps/statisticsIndicatorsTables.aspx?lang=en&table_id=3453
+palestine_health <- c(9.7,10.5,11.4,9.9,11.7,11.3,10.8,10,10.8,11,9.3,11.7,10.5,10.6,10,9.5,9.1,9.3,9.7)
+
+##Just filled the missing values with the previous vectors 
+data_2_filtered <- data_2_filtered %>%
+  mutate(`Inflation Rate` = ifelse(`Country Name` == "Argentina", argentina_inf, `Inflation Rate`)) %>%
+  mutate(`Inflation Rate` = ifelse(`Country Name` == "Turkmenistan", turkmenistan_inf, `Inflation Rate`)) %>%
+  mutate(`Inflation Rate` = ifelse(`Country Name` == "Cuba", cuba_inf, `Inflation Rate`)) %>%
+  mutate(`Health Expenditure (% GDP)`= ifelse(`Country Code`=="PSE",palestine_health,`Health Expenditure (% GDP)`))
+
+colSums(is.na(data_2_filtered))
+
+### Cuba was missing some values for the first few years so I used interpolation to fill it, 
+### so the NA'S will be replaced with the first value which is 3.7
+data_2_filtered <- data_2_filtered %>%
+  group_by(`Country Name`) %>%
+  mutate(`Inflation Rate` = na.approx(`Inflation Rate`, na.rm = FALSE,rule=2)) %>%
+  ungroup()
+
+colSums(is.na(data_2_filtered))
+
+### For the education expenditure, no results on the internet so we will fill missing values with mean for the 3 countries
+data_2_filtered <- data_2_filtered %>%
+  group_by(Year) %>%
+  mutate(`Education Expenditure (% GDP)` = ifelse(is.na(`Education Expenditure (% GDP)`) & 
+                                                    `Country Name` %in% c("Libya", "Bosnia and Herzegovina", "Equatorial Guinea"),
+                                                  mean(`Education Expenditure (% GDP)`, na.rm = TRUE),
+                                                  `Education Expenditure (% GDP)`)) %>%
+  ungroup()
+
+colSums(is.na(data_2_filtered))
+
+
+### Now our second data set is clean and we are ready to merge
+### Note: because the old data had time range from 1990 to 2018 and the new one starts from 2000,
+### We will make our analysis from 2000 to 2018
+
+final_data <- merge(data_clean,data_2_filtered,by=c("Country Name","Country Code","Year"))
+dim(final_data)
+colSums(is.na(final_data))
+str(final_data)
+summary(final_data)
