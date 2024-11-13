@@ -233,7 +233,8 @@ ggplot(long_final_data,aes(x=Value))+
   labs(title="Histogram of all numeric columns in the data",
        x= "Value",
        y="Frequency")+
-  theme_light()
+  theme_bw()+
+  theme( plot.title = element_text(hjust=0.5))
 
 
 ####################################
@@ -426,7 +427,9 @@ final_data_long_income_group <- final_data_birth_death_income_group %>%
 ggplot(final_data_long_income_group, aes(x = Year, y = Value, color = Income_Group)) +
   geom_line(size=1.2) +
   facet_wrap(~ Rate_Type, scales = "free_y") +
-  labs(y = "Rate per 1,000", x = "Year") +
+  labs(y = "Rate per 1,000", x = "Year", 
+       title="Birth and death rate across income groups over the years (2000-2018)") +
   theme_bw()+
-  theme(legend.position ="bottom")
+  theme(legend.position ="bottom",
+        plot.title = element_text(hjust=0.5))
 
