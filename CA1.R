@@ -387,17 +387,23 @@ ggplot(final_data_long, aes(x = Income_Group, y = Value, fill = Income_Group)) +
         legend.position = "bottom")
 
 
+final_data_grouped_inf <- final_data %>%
+  group_by(Country_Name, Income_Group) %>%
+  summarise(
+    Inflation_Rate = mean(Inflation_Rate, na.rm = TRUE),
+    GDP_per_capita_USD = mean(GDP_per_capita_USD, na.rm = TRUE)
+  )
+
 
 ### Fourth visualization: inflation rate by GDP per capita, for different income groups
 ### I set limits because some countries have an extremely high inflation that is not really useful in this case for me (outlier)
 ### As much as I wanted to see how is the inflation dependent of the gdp
-ggplot(final_data,aes(x=GDP_per_capita_USD,y=Inflation_Rate,color=Income_Group))+
+ggplot(final_data_grouped_inf,aes(x=GDP_per_capita_USD,y=Inflation_Rate,color=Income_Group))+
   geom_point(size=3,alpha=0.7) +
-  labs(title = "inflation rate vs gdp per cap by income group",
+  labs(title = "Average inflation rate vs gdp per cap by income group (2000-2018)",
        x= "gdp per cap",
        y="inflation rate",
        color="Income Group")+
-  ylim(-20,100)+
   theme_bw()+
   theme(
     plot.title = element_text(hjust = 0.5, size = 14),
