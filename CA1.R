@@ -294,3 +294,133 @@ heatmap.2(
 ) ## Adjust font size for row names
 
 
+colnames(final_data)
+## Changed the column names for easier visualizations
+colnames(final_data) <- c(
+  "Country_Name", 
+  "Country_Code", 
+  "Year", 
+  "Region", 
+  "Income_Group", 
+  "Birth_Rate_per_1000", 
+  "Death_Rate_per_1000", 
+  "GDP_USD", 
+  "GDP_per_capita_USD", 
+  "Infant_Mortality_Rate_per_1000", 
+  "Life_Expectancy_Years", 
+  "Population_Density_per_sq_km", 
+  "Unemployment_%", 
+  "Inflation_Rate", 
+  "Agriculture_%_GDP", 
+  "Industry_%_GDP", 
+  "Service_%_GDP", 
+  "Health_Expenditure_%_GDP", 
+  "Education_Expenditure_%_GDP", 
+  "Population"
+)
+
+## I grouped the data with country name and income group, then counted the mean gdp per cap and mean life exp from 2000 to 2018
+## so I can see the overall trend and relationship between gdp per cap and life expectancy
+final_data_grouped <- final_data %>%
+  group_by(Country_Name, Income_Group) %>%
+  summarise(
+    GDP_per_capita_USD = mean(GDP_per_capita_USD, na.rm = TRUE),
+    Life_Expectancy_Years = mean(Life_Expectancy_Years, na.rm = TRUE)
+  )
+
+
+### First visualization: GDP per capita vs Life expectancy by income group
+### I used log gdp per capita as part of normalizing data to get an insightful plot
+### because there's a huge gap between high income countries and low income in terms of gdp per cap
+ggplot(final_data_grouped, aes(x = log(GDP_per_capita_USD), y = Life_Expectancy_Years, color = Income_Group)) +
+  geom_point(size = 3, alpha = 0.7) +
+  geom_smooth(method="lm",se=FALSE,color="black")+
+  labs(
+    title = "Log GDP per Capita vs Life Expectancy by Income Group",
+    x = "GDP per capita (USD)",
+    y = "Life Expectancy at Birth (years)",
+    color = "Income Group"
+  ) +
+  theme_bw() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14),
+    legend.position = "bottom"
+  )
+
+
+
+### Second visualization: Health_Expenditure_Percent_GDP vs Life expectancy by Region
+## I wanted to see if there's a relationship between health investment and life expectancy
+ggplot(final_data, aes(x = `Health_Expenditure_%_GDP`, y = Life_Expectancy_Years, color = Region)) +
+  geom_point(size = 3, alpha = 0.7) +
+  facet_wrap(~ Year) +
+  labs(
+    title = " Health_Expenditure_Percent_GDP vs Life Expectancy by Region",
+    x = "Health_Expenditure_Percent_GDP",
+    y = "Life Expectancy at Birth (years)",
+    color = "Region"
+  ) +
+  theme_bw() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14),
+    legend.position = "bottom"
+  )
+
+
+### third visualization: Boxplots of birth rate and infant mortality rate by income group
+### to see the overall trend and distribution of values for different income groups (outliers are kept)
+# we need to reshape the data first as explained previously 
+final_data_long <- final_data %>%
+  pivot_longer(cols = c(Birth_Rate_per_1000, Infant_Mortality_Rate_per_1000), 
+               names_to = "Metric", 
+               values_to = "Value")
+
+
+ggplot(final_data_long, aes(x = Income_Group, y = Value, fill = Income_Group)) +
+  geom_boxplot() +
+  facet_wrap(~ Metric, scales = "free_y") +
+  labs(title = "Birth Rate and Infant Mortality Rate by Income Group",
+       x = "Income Group",
+       y = "Rate") +
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_blank(),        # removed the x axis labels as they are represented in the legend and colored
+        legend.position = "bottom")
+
+
+
+### Fourth visualization: inflation rate by GDP per capita, for different income groups
+### I set limits because some countries have an extremely high inflation that is not really useful in this case for me (outlier)
+### As much as I wanted to see how is the inflation dependent of the gdp
+ggplot(final_data,aes(x=GDP_per_capita_USD,y=Inflation_Rate,color=Income_Group))+
+  geom_point(size=3,alpha=0.7) +
+  labs(title = "inflation rate vs gdp per cap by income group",
+       x= "gdp per cap",
+       y="inflation rate",
+       color="Income Group")+
+  ylim(-20,100)+
+  theme_bw()+
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14),
+    legend.position = "bottom"
+  )
+
+
+### Fifth visualization: Birth_rate, death_rate for different income groups throughout the years (2000-2018)
+### reshaped the data and then plotted the birth and death rate over the years based on the income groups
+final_data_birth_death_income_group <- final_data %>%
+  group_by(Income_Group,Year) %>%
+  summarise(Death_Rate_per_1000 = mean(Death_Rate_per_1000),
+            Birth_Rate_per_1000 = mean(Birth_Rate_per_1000)) %>%
+  ungroup()
+
+final_data_long_income_group <- final_data_birth_death_income_group %>%
+  pivot_longer(cols = c(Birth_Rate_per_1000, Death_Rate_per_1000),
+               names_to = "Rate_Type", values_to = "Value")
+
+ggplot(final_data_long_income_group, aes(x = Year, y = Value, color = Income_Group)) +
+  geom_line(size=1.2) +
+  facet_wrap(~ Rate_Type, scales = "free_y") +
+  labs(y = "Rate per 1,000", x = "Year") +
+  theme_bw()+
+  theme(legend.position ="bottom")
+
