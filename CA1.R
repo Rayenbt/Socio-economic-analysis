@@ -352,21 +352,26 @@ ggplot(final_data_grouped, aes(x = log(GDP_per_capita_USD), y = Life_Expectancy_
 
 ### Second visualization: Health_Expenditure_Percent_GDP vs Life expectancy by Region
 ## I wanted to see if there's a relationship between health investment and life expectancy
-ggplot(final_data, aes(x = `Health_Expenditure_%_GDP`, y = Life_Expectancy_Years, color = Region)) +
+final_data_grouped_health <- final_data %>%
+  group_by(Country_Name, Income_Group) %>%
+  summarise(
+    `Health_Expenditure_%_GDP` = mean(`Health_Expenditure_%_GDP`, na.rm = TRUE),
+    Life_Expectancy_Years = mean(Life_Expectancy_Years, na.rm = TRUE)
+  )
+ggplot(final_data_grouped_health, aes(x = `Health_Expenditure_%_GDP`, y = Life_Expectancy_Years, color = Income_Group)) +
   geom_point(size = 3, alpha = 0.7) +
-  facet_wrap(~ Year) +
+  geom_smooth(method="lm",se=FALSE)+
   labs(
-    title = " Health_Expenditure_Percent_GDP vs Life Expectancy by Region",
+    title = " Average Health_Expenditure_Percent_GDP vs Life Expectancy by Income group (2000-2018)",
     x = "Health_Expenditure_Percent_GDP",
     y = "Life Expectancy at Birth (years)",
-    color = "Region"
+    color = "Income Group"
   ) +
   theme_bw() +
   theme(
     plot.title = element_text(hjust = 0.5, size = 14),
     legend.position = "bottom"
   )
-
 
 ### third visualization: Boxplots of birth rate and infant mortality rate by income group
 ### to see the overall trend and distribution of values for different income groups (outliers are kept)
