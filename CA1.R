@@ -438,3 +438,18 @@ ggplot(final_data_long_income_group, aes(x = Year, y = Value, color = Income_Gro
   theme(legend.position ="bottom",
         plot.title = element_text(hjust=0.5))
 
+#### one hot encoding
+### I did some research and turns out to be three different methods to do one hot encoding: one_hot in mltools package
+### dummyvars in caret package and dcast in reshape2 (as we did in class)
+### there is no difference in the results so I went for method 1 as a different approach from what we saw in class.
+### I followed this link to do so: https://datatricks.co.uk/one-hot-encoding-in-r-three-simple-methods
+install.packages("mltools")
+library(mltools)
+library(data.table)
+
+encoded_data <- final_data
+encoded_data$Income_Group <-as.factor(encoded_data$Income_Group)
+encoded_data$Region <- as.factor(encoded_data$Region)
+encoded_data <- one_hot(as.data.table(encoded_data))
+dim(encoded_data)
+encoded_data[,1:15]
