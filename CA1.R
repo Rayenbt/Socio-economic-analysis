@@ -338,7 +338,7 @@ ggplot(final_data_grouped, aes(x = log(GDP_per_capita_USD), y = Life_Expectancy_
   geom_smooth(method="lm",se=FALSE,color="black")+
   labs(
     title = "Log GDP per Capita vs Life Expectancy by Income Group",
-    x = "GDP per capita (USD)",
+    x = "Log GDP per capita (USD)",
     y = "Life Expectancy at Birth (years)",
     color = "Income Group"
   ) +
@@ -362,8 +362,8 @@ ggplot(final_data_grouped_health, aes(x = `Health_Expenditure_%_GDP`, y = Life_E
   geom_point(size = 3, alpha = 0.7) +
   geom_smooth(method="lm",se=FALSE)+
   labs(
-    title = " Average Health_Expenditure_Percent_GDP vs Life Expectancy by Income group (2000-2018)",
-    x = "Health_Expenditure_Percent_GDP",
+    title = "Life Expectancy vs Average Health Expenditure as % of GDP by Income group (2000-2018)",
+    x = "Average Health Expenditure as % of GDP",
     y = "Life Expectancy at Birth (years)",
     color = "Income Group"
   ) +
@@ -406,9 +406,9 @@ final_data_grouped_inf <- final_data %>%
 ### As much as I wanted to see how is the inflation dependent of the gdp
 ggplot(final_data_grouped_inf,aes(x=GDP_per_capita_USD,y=Inflation_Rate,color=Income_Group))+
   geom_point(size=3,alpha=0.7) +
-  labs(title = "Average inflation rate vs gdp per cap by income group (2000-2018)",
-       x= "gdp per cap",
-       y="inflation rate",
+  labs(title = "Average inflation rate vs GDP per capita by income group (2000-2018)",
+       x= "gdp per capita",
+       y="Inflation rate",
        color="Income Group")+
   theme_bw()+
   theme(
