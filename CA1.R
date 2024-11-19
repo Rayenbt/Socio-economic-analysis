@@ -469,6 +469,10 @@ pca_result$rotation[,1:3]
 
 library(factoextra)
 
+## scree plot implemented
+fviz_screeplot(pca_result,addlabels=TRUE)
+
+
 ## biplot combined with contribution 
 fviz_pca_var(pca_result, col.var = "cos2",
              gradient.cols = c("black", "blue", "green"),
