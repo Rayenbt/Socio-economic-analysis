@@ -453,3 +453,26 @@ encoded_data$Region <- as.factor(encoded_data$Region)
 encoded_data <- one_hot(as.data.table(encoded_data))
 dim(encoded_data)
 encoded_data[,1:15]
+
+
+
+#### PCA ####
+### I've only taken numeric data that I used in my analysis
+continuous_data <- final_data %>%
+  select(GDP_per_capita_USD,Life_Expectancy_Years,`Health_Expenditure_%_GDP`,Birth_Rate_per_1000,Death_Rate_per_1000,Infant_Mortality_Rate_per_1000,Inflation_Rate)
+##scaled the variables inside the prcomp
+pca_result <- prcomp(continuous_data, center = TRUE, scale =TRUE)
+pca_result
+summary(pca_result)
+# View rotations for the first 3 components as they represent 82% of the total variance
+pca_result$rotation[,1:3]
+
+library(factoextra)
+
+## biplot combined with contribution 
+fviz_pca_var(pca_result, col.var = "cos2",
+             gradient.cols = c("black", "blue", "green"),
+             repel = TRUE)
+
+
+
