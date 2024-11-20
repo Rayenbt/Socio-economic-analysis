@@ -1,6 +1,20 @@
 library(tidyverse)
 library(readxl)
 
+#### CODE SUMMARY :
+#### Data preparation and cleaning: Line 15
+#### CORRELATION MATRIX AND HEATMAP: Line 255
+#### Exploratory Data Analysis: Line 312
+#### One-hot encoding: Line 461
+#### PCA: Line 482 
+
+
+
+
+
+####################################
+## Data preparation and cleaning  ##
+####################################
 
 data<- read_excel("WorldBank.xlsx")
 head(data)
@@ -95,6 +109,7 @@ test <- test %>%
   group_by(`Country Name`) %>%
   ## then we go through all the columns, we check first if it's all null values, if that's true we keep it as we will check it later
   ## if there is null values, we fill them through linear interpolation or extrapolation if the missing values are on the two sides of the data
+  ## I used R documentation to achieve this task, https://www.rdocumentation.org/packages/zoo/versions/1.8-12/topics/na.approx
   mutate(`GDP (USD)`=if (all(is.na(`GDP (USD)`))) `GDP (USD)` else na.approx(`GDP (USD)`,Year,rule=2)) %>% ## rule=2 because our values are on the extreme side: example: (Na,1,2,3,NA)
   mutate(`GDP per capita (USD)`=if (all(is.na(`GDP per capita (USD)`))) `GDP per capita (USD)` else na.approx(`GDP per capita (USD)`,Year,rule=2)) %>%
   mutate(`Death rate, crude (per 1,000 people)`=if (all(is.na(`Death rate, crude (per 1,000 people)`))) `Death rate, crude (per 1,000 people)` else na.approx(`Death rate, crude (per 1,000 people)`,Year,rule=2)) %>%
@@ -294,6 +309,10 @@ heatmap.2(
   cexRow = 0.9
 ) ## Adjust font size for row names
 
+#################################
+##  Exploratory Data Analysis  ##
+#################################
+
 
 colnames(final_data)
 ## Changed the column names for easier visualizations
@@ -438,7 +457,10 @@ ggplot(final_data_long_income_group, aes(x = Year, y = Value, color = Income_Gro
   theme(legend.position ="bottom",
         plot.title = element_text(hjust=0.5))
 
-#### one hot encoding
+########################
+##  One-hot encoding  ##
+########################
+
 ### I did some research and turns out to be three different methods to do one hot encoding: one_hot in mltools package
 ### dummyvars in caret package and dcast in reshape2 (as we did in class)
 ### there is no difference in the results so I went for method 1 as a different approach from what we saw in class.
@@ -456,7 +478,10 @@ encoded_data[,1:15]
 
 
 
-#### PCA ####
+###########
+##  PCA  ##
+###########
+
 ### I've only taken numeric data that I used in my analysis
 continuous_data <- final_data %>%
   select(GDP_per_capita_USD,Life_Expectancy_Years,`Health_Expenditure_%_GDP`,Birth_Rate_per_1000,Death_Rate_per_1000,Infant_Mortality_Rate_per_1000,Inflation_Rate)
