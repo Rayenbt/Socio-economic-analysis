@@ -1,12 +1,16 @@
+### Name: Rayen Bentemessek 
+### Student Number: 2021378
+
+
 library(tidyverse)
 library(readxl)
 
 #### CODE SUMMARY :
-#### Data preparation and cleaning: Line 15
-#### CORRELATION MATRIX AND HEATMAP: Line 255
-#### Exploratory Data Analysis: Line 312
-#### One-hot encoding: Line 461
-#### PCA: Line 482 
+#### Data preparation and cleaning: Line 20
+#### CORRELATION MATRIX AND HEATMAP: Line 260
+#### Exploratory Data Analysis: Line 317
+#### One-hot encoding: Line 465
+#### PCA: Line 486 
 
 
 
